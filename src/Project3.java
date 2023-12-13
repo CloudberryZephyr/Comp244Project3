@@ -1,4 +1,6 @@
+import java.security.InvalidParameterException;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 
@@ -68,7 +70,88 @@ public class Project3 {
      * Error handling: print an error message if the date inputted is not valid.
      * @param date: a string  .
      */
-    public void findProjectByDate(String date) {
+    public void findProjectByDate(String date) throws SQLException {
+        String invalidDate = "Given date is invalid. Use valid date of format YYYY-MM-DD";
+
+        // Check if date is valid
+        if (date.length() != 10) {
+            System.out.println(invalidDate);
+            return;
+        }
+        String yearS = date.substring(0,4);
+        String monthS = date.substring(5,7);
+        String dayS = date.substring(8,10);
+        int year;
+        int month;
+        int day;
+
+        try {
+            year = Integer.parseInt(yearS);
+            month = Integer.parseInt(monthS);
+            day = Integer.parseInt(dayS);
+        } catch (Exception e) {
+            System.out.println(invalidDate);
+            return;
+        }
+
+        boolean valid = false;
+        if (year > 0 && year <= 2023) { // check year
+            if (month >= 1 && month <= 12) { // check month
+                if (day >= 1) {
+                    if ( (month == 4 || month == 6 || month == 9 || month == 11) && day <= 30) {  // check months with 30 days
+                        // date is valid
+                    } else if (month == 2) { // check february
+                        if ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0) {  // is leap year
+                            if (day <= 29) {
+                                valid = true;
+                            }
+                        } else {  // is not a leap year
+                            if (day <= 28) {
+                                valid = true;
+                            }
+                        }
+                    } else {  // remaining months have 31 days
+                        if (day <= 31) {
+                            valid = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!valid) {
+            System.out.println(invalidDate);
+            return;
+        }
+
+        date = yearS + "-" + monthS + "-" + dayS;  // reconstruct date with good spacers
+
+        PreparedStatement pstmt = conn.prepareStatement("" +
+                "select *\n" +
+                "from project \n" +
+                "where startingDate = ?");
+        pstmt.setString(1, date);
+        ResultSet rst = pstmt.executeQuery();
+
+        ResultSetMetaData rsmd = rst.getMetaData();
+        int numberOfColumns = rsmd.getColumnCount();
+        for (int i = 0; i < numberOfColumns; i++) {
+            System.out.print(rsmd.getColumnName(i+1) + "\t");
+        }
+        System.out.println();
+
+        while (rst.next()) {
+            int projID = rst.getInt(1); // project id
+            String desc = rst.getString(2); // project description
+            Date startingDate = rst.getDate(3); // starting date
+            Date endDate = rst.getDate(4); // ending date
+            String location = rst.getString(5); // project location
+            int volsNeeded = rst.getInt(6); // number of volunteers needed
+            String status = rst.getString(7); // project status
+            System.out.printf("%d | %s | %s | %s | %s | %d | %s \n", projID, desc, startingDate, endDate, location, volsNeeded, status);
+        }
+
+        pstmt.close();
     }
 
     /** Search by category: Display all the project IDs and descriptions of projects that belong to 
@@ -154,9 +237,13 @@ public class Project3 {
         try {
             Project3 db = new Project3("u266638", "p266638", "schema266638_airline");
 
-            db.listAllProjects();
+            //db.listAllProjects();
 
-//		db.findProjectByDate("2020-02-09");
+		    db.findProjectByDate("2020-02-09");  // test valid date no project
+            db.findProjectByDate("2022-02-09");  // test valid date with project
+            db.findProjectByDate("4578-72-12");  // test invalid date
+            db.findProjectByDate("rjkafahf;u");  // test invalid format
+
 //
 //		db.searchByCategory("service");
 //
