@@ -1,8 +1,7 @@
-import java.security.InvalidParameterException;
 import java.sql.*;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
+import static java.lang.String.format;
 
 public class Project3 {
 
@@ -71,7 +70,7 @@ public class Project3 {
      * @param date: a string  .
      */
     public void findProjectByDate(String date) throws SQLException {
-        String invalidDate = "Given date is invalid. Use valid date of format YYYY-MM-DD";
+        String invalidDate = "Error: Given date is invalid. Use valid date of format YYYY-MM-DD";
 
         // Check if date is valid
         if (date.length() != 10) {
@@ -159,7 +158,43 @@ public class Project3 {
      * Error handling: print an error message if the category cannot be found.
      * @param name of the category as  .
      */
-    public void searchByCategory(String name) {
+    public void searchByCategory(String name) throws SQLException {
+        PreparedStatement pstmt = conn.prepareStatement("" +
+                "select projID, p.description\n" +
+                "from category c\n" +
+                "join projectcat\n" +
+                "using (catID)\n" +
+                "join project p\n" +
+                "using (projID)\n" +
+                "where c.name = ?\n");
+        pstmt.setString(1, name);
+        ResultSet rst = pstmt.executeQuery();
+
+        String table = "";
+        int rows = 0;
+
+        ResultSetMetaData rsmd = rst.getMetaData();
+        int numberOfColumns = rsmd.getColumnCount();
+        for (int i = 0; i < numberOfColumns; i++) {
+            table += rsmd.getColumnName(i+1) + "\t";
+        }
+        table += "\n";
+
+
+        while (rst.next()) {
+            int projID = rst.getInt(1); // project id
+            String desc = rst.getString(2); // project description
+            table += format("%d | %s \n", projID, desc);
+            rows++;
+        }
+
+        if (rows == 0) {
+            System.out.println("Error: Category cannot be found");
+        } else {
+            System.out.println(table);
+        }
+
+        pstmt.close();
     }
 
     /** Search by keywords: Display all the project IDs and descriptions of 
@@ -268,13 +303,15 @@ public class Project3 {
 
             //db.listAllProjects();
 
-		    db.findProjectByDate("2020-02-09");  // test valid date no project
-            db.findProjectByDate("2022-02-09");  // test valid date with project
-            db.findProjectByDate("4578-72-12");  // test invalid date
-            db.findProjectByDate("rjkafahf;u");  // test invalid format
+//		      db.findProjectByDate("2020-02-09");  // test valid date no project
+//            db.findProjectByDate("2022-02-09");  // test valid date with project
+//            db.findProjectByDate("4578-72-12");  // test invalid date
+//            db.findProjectByDate("rjkafahf;u");  // test invalid format
 
-//
-//		db.searchByCategory("service");
+
+//		      db.searchByCategory("service");  // test valid category name
+//            db.searchByCategory("dsfjhk");  // test invalid category name
+//            db.searchByCategory("evil; insert into category value(213, \"evil\", \"testing evil stuff\");"); // test dangerous category name
 //
 //		String[] stuff = {"gcc", "ayugdahd; select * from timeslot"};
 //
