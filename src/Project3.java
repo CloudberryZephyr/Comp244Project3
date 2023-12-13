@@ -170,7 +170,36 @@ public class Project3 {
      * 
      * @param keywords one or more keywords as  .
 	 */
-    public void searchByKeywords(String[] keywords) {
+    public void searchByKeywords(String[] keywords) throws SQLException { //TODO: Debug
+        StringBuilder allWords = new StringBuilder();
+        for (int i = 1; i < keywords.length; i++) {
+            allWords.append("and description like ? ");
+        }
+        PreparedStatement pstmt = conn.prepareStatement("" +
+                "select projID, description " +
+                "from project " +
+                "where description like ? " +
+                allWords
+        );
+        for (int i = 0; i < keywords.length; i++) {
+            pstmt.setString(i+1, "\"%"+keywords[i]+"%\"");
+        }
+        ResultSet rst = pstmt.executeQuery();
+
+        ResultSetMetaData rsmd = rst.getMetaData();
+        int numberOfColumns = rsmd.getColumnCount();
+        for (int i = 0; i < numberOfColumns; i++) {
+            System.out.print(rsmd.getColumnName(i+1) + "\t");
+        }
+        System.out.println();
+
+        while (rst.next()) {
+            String projID = rst.getString(1); // project id
+            String description = rst.getString(2); // project desciption
+            System.out.printf("%s | %s \n", projID, description);
+        }
+
+        pstmt.close();
     }
 
     /** Change the duration of a timeslot: change the duration of a timeslot to a new value. 
