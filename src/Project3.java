@@ -228,12 +228,14 @@ public class Project3 {
         }
         System.out.println();
 
+        int nothingCount = 0;
         while (rst.next()) {
-            String projID = rst.getString(1); // project id
-            String description = rst.getString(2); // project desciption
-            System.out.printf("%s | %s \n", projID, description);
+            nothingCount++;
+            int projID = rst.getInt(1); // project id
+            String description = rst.getString(2); // project description
+            System.out.printf("%d | %s \n", projID, description);
         }
-
+        if(nothingCount == 0){System.err.println("No rows with all the given keywords");}
         pstmt.close();
     }
 
@@ -301,6 +303,7 @@ public class Project3 {
         try {
             Project3 db = new Project3("u266638", "p266638", "schema266638_airline");
 
+            db.searchByKeywords(new String[] {"Baby", "Shower"});
             //db.listAllProjects();
 
 //		      db.findProjectByDate("2020-02-09");  // test valid date no project
