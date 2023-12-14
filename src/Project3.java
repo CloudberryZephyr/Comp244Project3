@@ -1,7 +1,5 @@
 import java.sql.*;
 import java.time.LocalDate;
-import java.time.Month;
-import java.time.Year;
 import java.util.Date;
 import java.util.Properties;
 import static java.lang.String.format;
@@ -211,7 +209,7 @@ public class Project3 {
     public void searchByKeywords(String[] keywords) throws SQLException { //TODO: Debug
         StringBuilder allWords = new StringBuilder();
         for (int i = 1; i < keywords.length; i++) {
-            allWords.append("and description like ? ");
+            allWords.append("or description like ? ");
         }
         PreparedStatement pstmt = conn.prepareStatement("" +
                 "select projID, description " +
@@ -220,7 +218,7 @@ public class Project3 {
                 allWords
         );
         for (int i = 0; i < keywords.length; i++) {
-            pstmt.setString(i+1, "\"%"+keywords[i]+"%\"");
+            pstmt.setString(i+1, "%"+keywords[i]+"%");
         }
         ResultSet rst = pstmt.executeQuery();
 
@@ -444,9 +442,9 @@ public class Project3 {
 //            db.searchByCategory("dsfjhk");  // test invalid category name
 //            db.searchByCategory("evil; insert into category value(213, \"evil\", \"testing evil stuff\");"); // test dangerous category name
 //
-//		    String[] stuff = {"gcc", "ayugdahd; select * from timeslot"};
-//
-//		    db.searchByKeywords(stuff);
+		    String[] stuff = {"gcc", "ayugdahd; select * from timeslot"};
+
+		    db.searchByKeywords(stuff);
 //
 //		    db.changeDuration(2212, "2021-10-24", "10:00:00", 7 );
 //
