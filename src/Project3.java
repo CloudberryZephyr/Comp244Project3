@@ -357,12 +357,12 @@ public class Project3 {
                 rstC2.close();
                 // ii
                 PreparedStatement pstmt2 = conn.prepareStatement("" +
-                        "insert into projvolunteers VALUES (?,?,?,?) "
+                        "insert into projvolunteers VALUES (?, ?, ?, ? ) "
                 );
-                pstmt1.setInt(1, VolID);
-                pstmt1.setInt(2, projID);
-                pstmt1.setString(3, date);
-                pstmt1.setString(4, time);
+                pstmt2.setInt(1, VolID);
+                pstmt2.setInt(2, projID);
+                pstmt2.setString(3, date);
+                pstmt2.setString(4, time);
                 int rows = pstmt2.executeUpdate();
                 if(rows>0){
                     System.out.println("Insert successful");
