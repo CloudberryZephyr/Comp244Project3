@@ -324,8 +324,7 @@ public class Project3 {
             PreparedStatement pstmtCompare1 = conn.prepareStatement("" +
                     "select count(VolID) as comparison " +
                     "from projvolunteers " +
-                    "group by projID " +
-                    "having projID = ? " +
+                    "where projID = ? " +
                     "and Day = ? " +
                     "and startingTime = ? "
             );
@@ -348,13 +347,14 @@ public class Project3 {
 
             rstC1.next();
             int comparison = rstC1.getInt(1) + 1;
-            rstC1.close();
 
             rstC2.next();
             int volsNeeded = rstC1.getInt(1) + 1;
-            rstC2.close();
 
-            if(comparison < volsNeeded) {
+
+            if(comparison > volsNeeded) { //TODO: Make sure this is correct!
+                rstC1.close();
+                rstC2.close();
                 // ii
                 PreparedStatement pstmt2 = conn.prepareStatement("" +
                         "insert into projvolunteers VALUES (?,?,?,?) "
@@ -366,8 +366,12 @@ public class Project3 {
                 int rows = pstmt2.executeUpdate();
                 if(rows>0){
                     System.out.println("Insert successful");
+                    rstC1.close();
+                    rstC2.close();
                     return true;
                 } else {
+                    rstC1.close();
+                    rstC2.close();
                     System.out.println("Insert failed");
                     return false;
                 }
@@ -375,6 +379,7 @@ public class Project3 {
                 System.out.println("Volunteer not needed");
                 return false;
             }
+
         } else {
             System.out.println("Status not open");
             return false;
@@ -496,6 +501,9 @@ public class Project3 {
         try {
             Project3 db = new Project3("u268614", "p268614", "schema268614_airline");
 
+
+            db.volunteer(2211, "2022-02-09", "14:00:00", 5678);
+
             //db.changeDuration(2213, "2021-09-06", "12:00:00", 7);
             //db.searchByKeywords(new String[] {"Baby", "Shower"});
 //            db.listAllProjects();
@@ -510,9 +518,9 @@ public class Project3 {
 //            db.searchByCategory("dsfjhk");  // test invalid category name
 //            db.searchByCategory("evil; insert into category value(213, \"evil\", \"testing evil stuff\");"); // test dangerous category name
 //
-		    String[] stuff = {"gcc", "ayugdahd; select * from timeslot"};
+		    //String[] stuff = {"gcc", "ayugdahd; select * from timeslot"};
 
-		    db.searchByKeywords(stuff);
+		    //db.searchByKeywords(stuff);
 //
 //		    db.changeDuration(2212, "2021-10-24", "10:00:00", 7 );
 //
