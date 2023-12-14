@@ -224,21 +224,44 @@ public class Project3 {
         }
         ResultSet rst = pstmt.executeQuery();
 
+        String table = "";
+        int rows = 0;
+
         ResultSetMetaData rsmd = rst.getMetaData();
         int numberOfColumns = rsmd.getColumnCount();
         for (int i = 0; i < numberOfColumns; i++) {
-            System.out.print(rsmd.getColumnName(i+1) + "\t");
+            table += rsmd.getColumnName(i+1) + "\t";
         }
-        System.out.println();
+        table += "\n";
 
-        int nothingCount = 0;
+
         while (rst.next()) {
-            nothingCount++;
             int projID = rst.getInt(1); // project id
             String description = rst.getString(2); // project description
-            System.out.printf("%d | %s \n", projID, description);
+            table += format("%d | %s \n", projID, description);
+            rows++;
         }
-        if(nothingCount == 0){System.err.println("No rows with all the given keywords");}
+
+        if (rows == 0) {
+            System.err.println("Error: Descriptions with all given keywords cannot be found");
+        } else {
+            System.out.println(table);
+        }
+//        ResultSetMetaData rsmd = rst.getMetaData();
+//        int numberOfColumns = rsmd.getColumnCount();
+//        for (int i = 0; i < numberOfColumns; i++) {
+//            System.out.print(rsmd.getColumnName(i+1) + "\t");
+//        }
+//        System.out.println();
+//
+//        int nothingCount = 0;
+//        while (rst.next()) {
+//            nothingCount++;
+//            int projID = rst.getInt(1); // project id
+//            String description = rst.getString(2); // project description
+//            System.out.printf("%d | %s \n", projID, description);
+//        }
+//        if(nothingCount == 0){System.err.println("No descriptions with all the given keywords");}
         pstmt.close();
     }
 
@@ -251,8 +274,30 @@ public class Project3 {
      * @param time: starting time of timeslot 
      * @param newDuration: new duration as inputted from the user.
      */
-    public boolean changeDuration(int projID, String date, String time, int newDuration) {
-    	return false;
+    public boolean changeDuration(int projID, String date, String time, int newDuration) throws SQLException {
+            PreparedStatement pstmt = conn.prepareStatement("" +
+                    "update timeslot " +
+                    "set duration = ? " +
+                    "where projID = ? " +
+                    "and Day = ? " +
+                    "and startingTime = ? "
+            );
+            pstmt.setInt(1, newDuration);
+            pstmt.setInt(2, projID);
+            pstmt.setString(3, date);
+            pstmt.setString(4, time);
+
+        // pstmt is ready, launch it
+            int rows = pstmt.executeUpdate();
+            if(rows>0){
+                System.out.println("Duration change successful");
+                return true;
+            }
+            else{
+                System.err.println("Duration change failed: cannot find timeslot");
+                return false;
+            }
+
     }
 
     /** Volunteer for a timeslot: this method allows the user to volunteer for a timeslot. 
@@ -383,10 +428,11 @@ public class Project3 {
      */
 	public static void main(String[] args) {
         try {
-            Project3 db = new Project3("u266638", "p266638", "schema266638_airline");
+            Project3 db = new Project3("u268614", "p268614", "schema268614_airline");
 
+            //db.changeDuration(2213, "2021-09-06", "12:00:00", 7);
             //db.searchByKeywords(new String[] {"Baby", "Shower"});
-            //db.listAllProjects();
+//            db.listAllProjects();
 
 //		      db.findProjectByDate("2020-02-09");  // test valid date no project
 //            db.findProjectByDate("2022-02-09");  // test valid date with project
