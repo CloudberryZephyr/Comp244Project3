@@ -1,4 +1,7 @@
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.Year;
 import java.util.Date;
 import java.util.Properties;
 import static java.lang.String.format;
@@ -280,7 +283,86 @@ public class Project3 {
      * @param location: location of project
      * @param nVolunteers: number of volunteers needed
      */
-    public boolean addProject(int orgNo, String description, String startingDate, String endDate, String location, int nVolunteers) {
+    public boolean addProject(int orgNo, String description, String startingDate, String endDate, String location, int nVolunteers) throws SQLException {
+
+        // test date validity
+        String yearS = startingDate.substring(0,4);
+        String monthS = startingDate.substring(5,7);
+        String dayS = startingDate.substring(8,10);
+        int syear;
+        int smonth;
+        int sday;
+        Date start;
+
+        try {
+            syear = Integer.parseInt(yearS);
+            smonth = Integer.parseInt(monthS);
+            sday = Integer.parseInt(dayS);
+            start = new Date(syear, smonth, sday);
+        } catch (Exception e) {
+            System.out.println("Error: Start date is invalid");
+            return false;
+        }
+
+        String yearE = endDate.substring(0,4);
+        String monthE = endDate.substring(5,7);
+        String dayE = endDate.substring(8,10);
+        int eyear;
+        int emonth;
+        int eday;
+        Date end;
+
+        try {
+            eyear = Integer.parseInt(yearE);
+            emonth = Integer.parseInt(monthE);
+            eday = Integer.parseInt(dayE);
+        } catch (Exception e) {
+            System.out.println("Error: End date is invalid");
+            return false;
+        }
+
+        LocalDate currtime = LocalDate.now();
+        if (eyear<syear || (eyear==syear && emonth<smonth) || (eyear==syear && emonth==smonth && eday<sday)) {
+            System.out.println("Error: Ending date before start date");
+            return false;
+        } else if (syear<currtime.getYear() || (syear==currtime.getYear() && smonth<currtime.getMonthValue()) || (syear== currtime.getYear() && smonth==currtime.getMonthValue() && sday<currtime.getDayOfMonth())) {
+            System.out.println("Error: Starting date is earlier than today's date");
+            return false;
+        }
+
+        // find projid
+        PreparedStatement findprojid = conn.prepareStatement("" +
+                "select max(projID)\n" +
+                "from project");
+        ResultSet findprojidrst = findprojid.executeQuery();
+        findprojidrst.next();
+        int projid = findprojidrst.getInt(1) + 1;
+        findprojid.close();
+
+
+        PreparedStatement pstmt = conn.prepareStatement("" +
+                "insert into project value(?, ?, ?, ?, ?, ?, \"open\");");
+        pstmt.setInt(1, projid);
+        pstmt.setString(2, description);
+        pstmt.setString(3, startingDate);
+        pstmt.setString(4, endDate);
+        pstmt.setString(5, location);
+        pstmt.setInt(6, nVolunteers);
+        int rows = pstmt.executeUpdate();
+
+        pstmt.close();
+
+        PreparedStatement hostinsert = conn.prepareStatement("" +
+                "insert into hosts value(?, ?)");
+        hostinsert.setInt(1, orgNo);
+        hostinsert.setInt(2, projid);
+        int hostrows = hostinsert.executeUpdate();
+
+        hostinsert.close();
+
+        System.out.println("Project successfully inserted");
+
+
     	return true;
     }
 
@@ -303,7 +385,7 @@ public class Project3 {
         try {
             Project3 db = new Project3("u266638", "p266638", "schema266638_airline");
 
-            db.searchByKeywords(new String[] {"Baby", "Shower"});
+            //db.searchByKeywords(new String[] {"Baby", "Shower"});
             //db.listAllProjects();
 
 //		      db.findProjectByDate("2020-02-09");  // test valid date no project
@@ -316,15 +398,19 @@ public class Project3 {
 //            db.searchByCategory("dsfjhk");  // test invalid category name
 //            db.searchByCategory("evil; insert into category value(213, \"evil\", \"testing evil stuff\");"); // test dangerous category name
 //
-//		String[] stuff = {"gcc", "ayugdahd; select * from timeslot"};
+//		    String[] stuff = {"gcc", "ayugdahd; select * from timeslot"};
 //
-//		db.searchByKeywords(stuff);
+//		    db.searchByKeywords(stuff);
 //
-//		db.changeDuration(2212, "2021-10-24", "10:00:00", 7 );
+//		    db.changeDuration(2212, "2021-10-24", "10:00:00", 7 );
 //
-//		db.volunteer(2211, "2020-02-09","14:00:00", 5688);
+//		    db.volunteer(2211, "2020-02-09","14:00:00", 5688);
 //
-//		db.addProject(2214, "Christmas Potluck", "2023-12-24", "2023-12-24", "MAPS", 5,"open");
+		    //db.addProject(10001, "Christmas Potluck", "2023-12-24", "2023-12-24", "MAPS", 5);  // test valid insert
+            //db.addProject(10001, "test", "2023-12-24", "2023-12-23", "MAPS", 5); // test ending before start
+            //db.addProject(10001, "Halloween potluck", "2023-10-24", "2023-12-24", "MAPS", 5); // test starting before today
+
+
 
             db.exitApplication();
 
