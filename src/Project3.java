@@ -499,10 +499,9 @@ public class Project3 {
      */
 	public static void main(String[] args) {
         try {
-            Project3 db = new Project3("u268614", "p268614", "schema268614_airline");
+            Project3 db = new Project3("u266638", "p266638", "schema266638_airline");
 
 
-            db.volunteer(2211, "2022-02-09", "14:00:00", 5678);
 
             //db.changeDuration(2213, "2021-09-06", "12:00:00", 7);
             //db.searchByKeywords(new String[] {"Baby", "Shower"});
@@ -518,15 +517,19 @@ public class Project3 {
 //            db.searchByCategory("dsfjhk");  // test invalid category name
 //            db.searchByCategory("evil; insert into category value(213, \"evil\", \"testing evil stuff\");"); // test dangerous category name
 //
-		    //String[] stuff = {"gcc", "ayugdahd; select * from timeslot"};
+            //String[] stuff = {"gcc", "ayugdahd; select * from timeslot"};
 
-		    //db.searchByKeywords(stuff);
+            //db.searchByKeywords(stuff);
 //
 //		    db.changeDuration(2212, "2021-10-24", "10:00:00", 7 );
-//
-//		    db.volunteer(2211, "2020-02-09","14:00:00", 5688);
-//
-		    //db.addProject(10001, "Christmas Potluck", "2023-12-24", "2023-12-24", "MAPS", 5);  // test valid insert
+
+            db.volunteer(2211, "2022-02-09", "14:00:00", 5688); // test valid entry
+            db.volunteer(2211, "2021-02-09", "14:00:00", 5678); // test invalid timeslot date
+            db.volunteer(2211, "2022-02-09", "13:00:00", 5678); // test invalid timeslot time
+            db.volunteer(2211, "2022-02-09", "14:00:00", 5677); // test invalid volunteer id
+
+
+            //db.addProject(10001, "Christmas Potluck", "2023-12-24", "2023-12-24", "MAPS", 5);  // test valid insert
             //db.addProject(10001, "test", "2023-12-24", "2023-12-23", "MAPS", 5); // test ending before start
             //db.addProject(10001, "Halloween potluck", "2023-10-24", "2023-12-24", "MAPS", 5); // test starting before today
 
