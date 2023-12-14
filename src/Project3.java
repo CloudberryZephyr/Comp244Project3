@@ -206,7 +206,7 @@ public class Project3 {
      * 
      * @param keywords one or more keywords as  .
 	 */
-    public void searchByKeywords(String[] keywords) throws SQLException { //TODO: Debug
+    public void searchByKeywords(String[] keywords) throws SQLException {
         StringBuilder allWords = new StringBuilder();
         for (int i = 1; i < keywords.length; i++) {
             allWords.append("or description like ? ");
@@ -309,8 +309,76 @@ public class Project3 {
      * @param time: starting time of timeslot
      * @param VolID: volunteer ID as inputted from the user.
      */
-    public boolean volunteer(int projID, String date, String time, int VolID) {
-    	return false;
+    public boolean volunteer(int projID, String date, String time, int VolID) throws SQLException {
+        //TODO: print an error message if the timeslot cannot be found or the volunteer ID cannot be found.
+        PreparedStatement pstmt1 = conn.prepareStatement("" +
+                        "select status " +
+                        "from project " +
+                        "where projID = ? " +
+                        "and status = \"open\" "
+            );
+        pstmt1.setInt(1, projID);
+        ResultSet rst1 = pstmt1.executeQuery();
+
+        if(rst1.next()) { // if has an element and thus is open
+            PreparedStatement pstmtCompare1 = conn.prepareStatement("" +
+                    "select count(VolID) as comparison " +
+                    "from projvolunteers " +
+                    "group by projID " +
+                    "having projID = ? " +
+                    "and Day = ? " +
+                    "and startingTime = ? "
+            );
+            pstmtCompare1.setInt(1, projID);
+            pstmtCompare1.setString(2, date);
+            pstmtCompare1.setString(3, time);
+
+            ResultSet rstC1 = pstmtCompare1.executeQuery();
+            PreparedStatement pstmtCompare2 = conn.prepareStatement("" +
+                    "select nVolneeded " +
+                    "from timeslot " +
+                    "where projID = ? " +
+                    "and Day = ? " +
+                    "and startingTime = ? "
+            );
+            pstmtCompare2.setInt(1, projID);
+            pstmtCompare2.setString(2, date);
+            pstmtCompare2.setString(3, time);
+            ResultSet rstC2 = pstmtCompare2.executeQuery();
+
+            rstC1.next();
+            int comparison = rstC1.getInt(1) + 1;
+            rstC1.close();
+
+            rstC2.next();
+            int volsNeeded = rstC1.getInt(1) + 1;
+            rstC2.close();
+
+            if(comparison < volsNeeded) {
+                // ii
+                PreparedStatement pstmt2 = conn.prepareStatement("" +
+                        "insert into projvolunteers VALUES (?,?,?,?) "
+                );
+                pstmt1.setInt(1, VolID);
+                pstmt1.setInt(2, projID);
+                pstmt1.setString(2, date);
+                pstmt1.setString(2, time);
+                int rows = pstmt2.executeUpdate();
+                if(rows>0){
+                    System.out.println("Insert successful");
+                    return true;
+                } else {
+                    System.out.println("Insert failed");
+                    return false;
+                }
+            } else {
+                System.out.println("Volunteer not needed");
+                return false;
+            }
+        } else {
+            System.out.println("Status not open");
+            return false;
+        }
     }
 
     /** Add a project: the user needs to specify the information about the project. 
