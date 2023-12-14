@@ -346,13 +346,13 @@ public class Project3 {
             ResultSet rstC2 = pstmtCompare2.executeQuery();
 
             rstC1.next();
-            int comparison = rstC1.getInt(1) + 1;
+            int comparison = rstC1.getInt(1);
 
             rstC2.next();
-            int volsNeeded = rstC1.getInt(1) + 1;
+            int volsNeeded = rstC2.getInt(1);
 
 
-            if(comparison > volsNeeded) { //TODO: Make sure this is correct!
+            if(comparison < volsNeeded) { //TODO: Make sure this is correct!
                 rstC1.close();
                 rstC2.close();
                 // ii
@@ -361,8 +361,8 @@ public class Project3 {
                 );
                 pstmt1.setInt(1, VolID);
                 pstmt1.setInt(2, projID);
-                pstmt1.setString(2, date);
-                pstmt1.setString(2, time);
+                pstmt1.setString(3, date);
+                pstmt1.setString(4, time);
                 int rows = pstmt2.executeUpdate();
                 if(rows>0){
                     System.out.println("Insert successful");
@@ -370,12 +370,12 @@ public class Project3 {
                     rstC2.close();
                     return true;
                 } else {
-                    rstC1.close();
-                    rstC2.close();
                     System.out.println("Insert failed");
                     return false;
                 }
             } else {
+                rstC1.close();
+                rstC2.close();
                 System.out.println("Volunteer not needed");
                 return false;
             }
@@ -499,7 +499,7 @@ public class Project3 {
      */
 	public static void main(String[] args) {
         try {
-            Project3 db = new Project3("u266638", "p266638", "schema266638_airline");
+            Project3 db = new Project3("u268614", "p268614", "schema268614_airline");
 
 
 
